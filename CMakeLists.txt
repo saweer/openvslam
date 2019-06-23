@@ -99,16 +99,32 @@ endif()
 #######################
 
 include(CheckCXXCompilerFlag)
-check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
-check_cxx_compiler_flag("-std=c++14" COMPILER_SUPPORTS_CXX14)
+
+# set C++17 flag to enable Eigen's over alignment
+# https://eigen.tuxfamily.org/dox-devel/group__TopicStlContainers.html
+
+if(${CMAKE_CXX_COMPILER_ID} STREQUAL "MSVC")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.12 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 19.12)
+        check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
+    endif()
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 7.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 7.0)
+        check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
+    endif()
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
+    if(CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 5.0 OR CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 5.0)
+        check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
+    endif()
+else()
+    check_cxx_compiler_flag("-std=c++17" COMPILER_SUPPORTS_CXX17)
+endif()
+
 check_cxx_compiler_flag("-std=c++11" COMPILER_SUPPORTS_CXX11)
 check_cxx_compiler_flag("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+
 if(COMPILER_SUPPORTS_CXX17)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
     message(STATUS "C++11 support: OK (-std=c++17)")
-elseif(COMPILER_SUPPORTS_CXX14)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    message(STATUS "C++11 support: OK (-std=c++14)")
 elseif(COMPILER_SUPPORTS_CXX11)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
     message(STATUS "C++11 support: OK (-std=c++11)")
